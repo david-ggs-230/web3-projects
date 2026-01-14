@@ -9,5 +9,8 @@ npx hardhat help
 npx hardhat test
 REPORT_GAS=true npx hardhat test
 npx hardhat node
+# deploy Lock contract
 npx hardhat ignition deploy ./ignition/modules/Lock.js
+# deploy CarAuction contract to hardhat localhost
+npx hardhat run scripts/car-auction-deploy.js --network localhost
 ```
