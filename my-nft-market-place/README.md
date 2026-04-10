@@ -1,25 +1,45 @@
-# My NFT MarketPlace
+# NFT and Marketplace Smart Contract Project
 
-This project contains basic configuration and setup files for Ethereum smart contract development using **Hardhat**.
+This project consists of two core Solidity smart contracts designed to enable the creation, management, and trading of Non-Fungible Tokens (NFTs) on the Ethereum blockchain.
 
 https://github.com/Markkop/nft-marketplace
 
-## Project Files
+## Project Overview
 
-- `hardhat.config.js`  
-  Hardhat configuration file defining Solidity version, local Hardhat network, and Sepolia testnet settings.
+The contracts work together to provide a complete NFT ecosystem, allowing users to mint unique NFTs and trade them via a dedicated marketplace.
 
-- `.env.example` (or your second attachment)  
-  Example environment variable template for securely storing sensitive data such as RPC URLs and wallet private keys.
+## Contract Files
 
-## Purpose
+- MyNFT.sol: A contract for creating and managing NFTs, including minting, updating token metadata, and tracking token creators and owners. It inherits from standard OpenZeppelin contracts to ensure security and compatibility.
 
-This setup provides a clean, secure, and ready-to-use foundation for compiling, testing, and deploying smart contracts to both local development networks and public testnets. It follows standard security practices by separating sensitive credentials from source code.
+- MyNFTMarketPlace.sol: A marketplace contract that facilitates the listing, buying, canceling, and relisting of NFTs. It includes features for fee management, secure transactions, and easy retrieval of market items.
 
-## Usage
+## Core Functionality
 
-1. Install dependencies
-2. Configure environment variables
-3. Compile contracts
-4. Test and deploy to networks
+- Mint and manage unique NFTs with customizable metadata
+
+- List NFTs for sale, purchase listed items, and cancel listings
+
+- Track NFT ownership, creation, and marketplace activity
+
+- Secure fee collection and withdrawal for marketplace operations
+
+## Prerequisites
+
+- Solidity ^0.8.28
+
+- OpenZeppelin Contracts ^5.6.0
+
+- Hardhat or similar Ethereum development environment
+
+## Installation Steps
+
+1. Clone the project repository to your local machine.
+
+2. Navigate to the project directory and install dependencies using `npm install`.
+
+3. Ensure all prerequisites are installed and configured correctly.
+
+4. Compile the smart contracts using your preferred Ethereum development tool (e.g., `npx hardhat compile`).
+
 
