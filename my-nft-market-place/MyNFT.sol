@@ -90,7 +90,7 @@ contract MyNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     function getTokenCreatorById(
         uint256 tokenId
     ) public view returns (address) {
-        require(_exists(tokenId), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _creators[tokenId];
     }
 
@@ -100,7 +100,7 @@ contract MyNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     
     // Helper function to check if a token ID is valid (not zero)
     function isValidTokenId(uint256 tokenId) public view returns (bool) {
-        return _exists(tokenId);
+        return (_ownerOf(tokenId) != address(0));
     }
     
     // The following functions are overrides required by Solidity.
