@@ -37,6 +37,7 @@ contract MyNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     
     function setMarketplaceAddress(address _marketplaceAddress) external onlyOwner {
         require(_marketplaceAddress != address(0), "Cannot set to zero address");
+        require(_marketplaceAddress != marketplaceAddress, "Cannot set to same address");
         address oldMarketplace = marketplaceAddress;
         // Revoke old approval
         if (marketplaceAddress != address(0)) {
