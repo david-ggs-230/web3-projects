@@ -1,199 +1,41 @@
-# MyNFTMarketplace Design Document
+# MyNFTMarketplace Smart Contract Documentation
 
-## Contract Overview
-The `MyNFTMarketplace` is a decentralized escrow-based NFT marketplace built on ERC721 standards. It enables users to securely list, buy, delist, and resell NFTs while tracking original creators and supporting platform fee management.
+## Overview
 
-Core Features:
-- List NFTs for sale with a required listing fee
-- Purchase listed NFTs with native ETH
-- Batch Buying for gas-efficient multi-NFT purchase
-- Delist NFTs and return them to the original lister
-- Relist purchased or canceled NFTs
-- Query marketplace listings, user-owned items, selling items, and purchased items
-- Admin controls for updating fees and withdrawing platform revenue
-- Emergency cancel all listings with fee refund
+`MyNFTMarketplace` is a decentralized marketplace for ERC721 tokens, specifically designed to work seamlessly with the `MyNFT` contract. It allows users to list, buy, cancel, and relist NFTs. The marketplace charges a listing fee (configurable by the owner) and uses a non‑reentrant pattern to prevent reentrancy attacks.
 
----
-## 1. createMarketItem()
-### 1.1 Inputs
-- `address nftContractAddress` – ERC721 NFT contract address
-- `uint256 tokenId` – NFT token ID to list
-- `uint256 price` – Sale price in wei
-### 1.2 Process
-1. Validate price > 0
-2. Verify correct listing fee is included
-3. Check that the contract implements ERC721 via ERC165
-4. Confirm caller is the NFT owner
-5. Generate new marketItemId using a counter
-6. Fetch original NFT creator from MyNFT contract
-7. Create and store a new MarketItem with listing fee
-8. Map NFT (contract + tokenId) to the latest marketItemId
-9. Transfer NFT from seller to marketplace escrow
-10. Emit `MarketItemCreated` event
-### 1.3 Behavior
-Creates an active marketplace listing held in contract custody; listing fee is collected on creation.
+The contract holds NFTs while they are listed, transfers them upon sale or cancellation, and manages fee collection and distribution.
 
----
-## 2. cancelMarketItem()
-### 2.1 Input
-- `uint256 marketItemId` – ID of the listing to cancel
-### 2.2 Process
-1. Validate market item exists
-2. Restrict access to the original seller
-3. Ensure item is not sold, not canceled, and currently listed
-4. Update state: `canceled = true`, `owner = msg.sender`
-5. Transfer listing fee to marketplace owner
-6. Return NFT from marketplace to seller
-7. Emit `MarketItemCanceled` event
-### 2.3 Behavior
-Removes the NFT from sale and returns ownership to the lister; listing fee is sent to marketplace owner.
+## Features
 
----
-## 3. getLatestMarketItemByTokenId()
-### 3.1 Inputs
-- `address nftContractAddress`
-- `uint256 tokenId`
-### 3.2 Process
-1. Look up the latest marketItemId for the given NFT
-2. If not found, return `EMPTY_MARKET_ITEM` and `false`
-3. Otherwise return the MarketItem and `true`
-### 3.3 Behavior
-Frontend-friendly view function that does not revert on missing listings.
+- **List NFTs for Sale** – Sellers can list their NFTs with a fixed price by paying a listing fee.
+- **Buy NFTs** – Buyers can purchase listed NFTs by sending exactly the listing price.
+- **Cancel Listings** – Sellers can cancel their own active listings and get their NFT back (listing fee is not refunded in the standard flow).
+- **Relist NFTs** – After a purchase or cancellation, the new owner can relist the same NFT with a new price by paying the listing fee again.
+- **Admin Functions** – The marketplace owner can update the listing fee, cancel any listing (with refund to seller), deposit/withdraw contract funds, and manage the contract.
+- **Transparent Events** – Every important action emits an event for off‑chain tracking.
+- **ERC721Holder** – Inherits OpenZeppelin’s `ERC721Holder` to safely receive NFTs.
 
----
-## 4. createMarketSale()
-### 4.1 Input
-- `uint256 marketItemId` – ID of the NFT to purchase
-### 4.2 Process
-1. Validate market item exists
-2. Prevent users from buying their own listings
-3. Ensure item is active, unsold, and not canceled
-4. Verify payment matches listing price
-5. Mark item as sold and set new owner
-6. Transfer sale funds to seller
-7. Transfer listing fee to marketplace owner
-8. Transfer NFT to buyer
-9. Emit `MarketItemSold` event
-### 4.3 Behavior
-Completes a purchase and transfers both NFT and funds; listing fee is sent to marketplace owner.
+## Contract Structure
 
----
-## 5. relistMarketItem()
-### 5.1 Inputs
-- `uint256 marketItemId` – Existing market item ID
-- `uint256 price` – New sale price
-### 5.2 Process
-1. Validate new price > 0
-2. Require correct listing fee
-3. Verify market item exists
-4. Allow only the current owner to relist
-5. Require item to be sold or previously canceled
-6. Update market item status to active listing
-7. Transfer NFT back into marketplace escrow
-8. Emit `MarketItemRelisted` event
-### 5.3 Behavior
-Enables users to resell NFTs from their collection; charges a new listing fee.
+### Inheritance
 
----
-## 6. fetchListedMarketItems()
-### 6.1 Purpose
-Returns all active, unsold, non-canceled marketplace listings.
-### 6.2 Filters
-- `sold == false`
-- `canceled == false`
-- `owner == address(0)`
-### 6.3 Usage
-Display public marketplace inventory.
+- `ReentrancyGuardTransient` – Provides protection against reentrancy attacks using transient storage (cheaper than persistent storage).
+- `ERC721Holder` – Required to receive ERC721 tokens via `safeTransferFrom`.
 
----
-## 7. fetchOwnedMarketItems()
-### 7.1 Purpose
-Returns items related to the caller: their active listings and canceled items.
-### 7.2 Filters
-- (Listed AND seller == msg.sender)
-- OR (Canceled AND owner == msg.sender)
-### 7.3 Usage
-Display user’s related marketplace items.
+### State Variables
 
----
-## 8. fetchOwnSellingMarketItems()
-### 8.1 Purpose
-Returns only the user’s currently active selling listings.
-### 8.2 Filters
-- `seller == msg.sender`
-- `owner == address(0)`
-### 8.3 Usage
-Display user’s active on-sale items.
+| Variable | Type | Description |
+|----------|------|-------------|
+| `_nextMarketItemId` | `uint256` | Next unique market item ID (starts at 1). |
+| `owner` | `address payable` | Immutable marketplace owner address (set at construction). |
+| `listingFee` | `uint256` | Fee (in wei) required to list an NFT. Default is `0.0015 ether`. |
+| `_lockedFees` | `uint256` | Total listing fees currently locked in active listings (non‑withdrawable portion of contract balance). |
+| `marketItemIdToMarketItem` | `mapping(uint256 => MarketItem)` | Market item ID → `MarketItem` struct. |
+| `tokenIdToLatestMarketItemId` | `mapping(address => mapping(uint256 => uint256))` | NFT contract → token ID → latest market item ID. |
 
----
-## 9. fetchOwnPurchasedMarketItems()
-### 9.1 Purpose
-Returns all NFTs the user has purchased.
-### 9.2 Filters
-- `owner == msg.sender`
-- `sold == true`
-### 9.3 Usage
-Display user’s purchased NFT collection.
+### Struct – `MarketItem`
 
----
-## 10. updateListingFee()
-### 10.1 Input
-- `uint256 _newPrice` – New listing fee in wei
-### 10.2 Permissions
-Owner-only
-### 10.3 Process
-1. Require new price > 0 and different from current
-2. Update listing fee
-3. Emit `ListingFeeUpdated` event
-### 10.4 Behavior
-Updates platform listing fee.
-
----
-## 11. getListingFee()
-### 11.1 Output
-- `uint256` – Current listing fee
-### 11.2 Usage
-Frontend display of required fee for listing.
-
----
-## 12. withdrawAllFees()
-### 12.1 Permissions
-Owner-only
-### 12.2 Process
-1. Cancel all active listings via internal `_cancelAndRefund`
-2. Refund listing fees to sellers and return NFTs
-3. Withdraw remaining contract ETH balance to owner
-### 12.3 Behavior
-Emergency admin function to cancel all listings, refund fees, and withdraw platform revenue.
-
----
-## 13. _cancelAndRefund()
-### 13.1 Input
-- `uint256 marketItemId` – ID of the listing to cancel and refund
-### 13.2 Permissions
-Internal only
-### 13.3 Process
-1. Validate item is active listing
-2. Update state: `canceled = true`, `owner = seller`
-3. Return NFT to seller
-4. Refund listing fee to seller
-5. Emit `MarketItemCanceled` event
-### 13.4 Behavior
-Internal helper for emergency cancel with fee refund.
-
----
-## 14. getMarketItem()
-### 14.1 Input
-- `uint256 marketItemId` – Market item ID to query
-### 14.2 Process
-1. Validate market item ID is valid
-2. Return corresponding MarketItem struct
-### 14.3 Behavior
-View function to fetch single market item details.
-
----
-## Data Structure
-### MarketItem Struct
 ```solidity
 struct MarketItem {
     uint256 marketItemId;
@@ -209,10 +51,186 @@ struct MarketItem {
 }
 ```
 
+| Field | Description |
+|-------|-------------|
+| `marketItemId` | Unique ID of this listing. |
+| `nftContractAddress` | Address of the ERC721 contract. |
+| `tokenId` | ID of the NFT. |
+| `creator` | Original NFT creator (from `MyNFT` contract). |
+| `seller` | Current seller (address that listed the item). |
+| `owner` | Current owner – `address(0)` when listed, buyer or seller after sale/cancellation. |
+| `price` | Sale price in wei. |
+| `listingfee` | Listing fee paid (captured when created). |
+| `sold` | Whether the item has been sold. |
+| `canceled` | Whether the listing has been canceled. |
+
+### Modifiers
+
+- `onlyOwner` – Restricts access to the marketplace owner.
+
+## Events
+
+| Event | Description |
+|-------|-------------|
+| `ListingFeeUpdated(uint256 oldPrice, uint256 newPrice, address updatedBy)` | Emitted when the listing fee is changed. |
+| `MarketItemCreated(uint256 marketItemId, address nftContract, uint256 tokenId, address creator, address seller, address owner, uint256 price, uint256 listingfee, bool sold, bool canceled)` | Emitted when a new listing is created. |
+| `MarketItemCanceled(uint256 marketItemId, address nftContract, uint256 tokenId, address seller)` | Emitted when a listing is canceled (by seller or admin). |
+| `MarketItemSold(uint256 marketItemId, address nftContract, uint256 tokenId, address seller, address buyer, uint256 price, uint256 listingFee)` | Emitted when an NFT is purchased. |
+| `MarketItemRelisted(uint256 marketItemId, address nftContract, uint256 tokenId, address creator, address seller, address owner, uint256 price, uint256 listingfee, bool sold, bool canceled)` | Emitted when an existing market item is relisted. |
+| `OwnerDeposited(address indexed owner, uint256 amount)` | Emitted when the owner deposits ETH into the contract. |
+
+## Functions
+
+### Constructor
+
+```solidity
+constructor()
+```
+
+- Sets the `owner` to `msg.sender`.
+- Initializes `_nextMarketItemId` to 1 (IDs start from 1).
+
+### Admin Functions
+
+#### `updateListingFee(uint256 _newPrice) external onlyOwner`
+
+- Updates the listing fee.
+- Requirements: `_newPrice > 0` and different from current fee.
+- Emits `ListingFeeUpdated`.
+
+#### `deposit() external payable onlyOwner`
+
+- Allows the owner to deposit ETH into the contract (e.g., to provide withdrawal liquidity). Emits `OwnerDeposited`.
+
+#### `withdrawBalance() public onlyOwner nonReentrant`
+
+- Withdraws the contract’s ETH balance that is **not** locked as listing fees (`address(this).balance - _lockedFees`).
+- Safe transfer to owner.
+
+#### `cancelItemListingAndRefundByAdmin(uint256 marketItemId) public onlyOwner nonReentrant`
+
+- Admin‑only cancellation of an active listing.
+- Refunds the listing fee to the seller and returns the NFT.
+- Requirements: item must be active (`!sold && !canceled && owner == address(0)`).
+
+### User Functions (Listing, Buying, Canceling, Relisting)
+
+#### `createMarketItem(address nftContractAddress, uint256 tokenId, uint256 price) public payable nonReentrant returns (uint256)`
+
+- Creates a new listing.
+- Requirements:
+  - `price > 0`
+  - `msg.value == listingFee`
+  - NFT contract supports ERC721 (via `supportsInterface`)
+  - Caller owns the NFT (checked via `ownerOf`)
+- Transfers the NFT from seller to marketplace.
+- Stores the `MarketItem` and records the latest market item ID.
+- Emits `MarketItemCreated`.
+- Returns the new `marketItemId`.
+
+#### `cancelMarketItem(uint256 marketItemId) public nonReentrant`
+
+- Cancels a listing that the caller created.
+- Requirements:
+  - Item exists and is active (`!sold && !canceled && owner == address(0)`)
+  - `msg.sender == item.seller`
+- Effects:
+  - Marks item as `canceled`, sets `owner` to seller.
+  - Removes listing fee from `_lockedFees`.
+- Interactions:
+  - Returns NFT to seller.
+  - Transfers listing fee to the marketplace **owner** (no refund to seller in this flow).
+- Emits `MarketItemCanceled`.
+
+#### `createMarketSale(uint256 marketItemId) public payable nonReentrant`
+
+- Purchases a listed NFT.
+- Requirements:
+  - Item exists and is active (`!sold && !canceled && owner == address(0)`)
+  - `msg.sender != item.seller`
+  - `msg.value == item.price`
+- Effects:
+  - Marks item as `sold`, sets `owner` to buyer, updates `seller` to buyer.
+  - Removes listing fee from `_lockedFees`.
+- Interactions:
+  - Transfers NFT from marketplace to buyer.
+  - Transfers sale price to seller.
+  - Transfers listing fee to marketplace owner.
+- Emits `MarketItemSold`.
+
+#### `relistMarketItem(uint256 marketItemId, uint256 price) public payable nonReentrant`
+
+- Allows the current owner (who bought or canceled the item) to relist it for sale.
+- Requirements:
+  - `price > 0`, `msg.value == listingFee`
+  - Item exists, `item.owner == msg.sender`
+  - Caller still owns the NFT (`ownerOf(tokenId)`)
+  - Item must have been sold or canceled before (`sold == true || canceled == true`)
+- Effects:
+  - Updates `seller` to caller, `owner` to `address(0)`, `price` to new price, `listingfee` to current fee, `sold = false`, `canceled = false`.
+  - Adds listing fee to `_lockedFees`.
+- Interactions:
+  - Transfers NFT from caller back to marketplace.
+- Emits `MarketItemRelisted`.
+
+### View Functions
+
+#### `getListingFee() public view returns (uint256)`
+
+- Returns the current listing fee.
+
+#### `getLatestMarketItemByTokenId(address nftContractAddress, uint256 tokenId) public view returns (MarketItem memory, bool)`
+
+- Returns the most recent `MarketItem` for a given NFT and a boolean indicating whether it exists.
+- If no valid listing is found, returns an empty struct and `false`.
+
+#### `fetchListedMarketItems() public view returns (MarketItem[] memory)`
+
+- Returns all **active** listings (`!sold && !canceled && owner == address(0)`).
+
+#### `fetchOwnedMarketItems() public view returns (MarketItem[] memory)`
+
+- Returns items that the caller “owns” in the marketplace context:
+  - Active listings where caller is the seller (`owner == address(0) && seller == msg.sender`), or
+  - Canceled items where caller is the `owner` (after cancellation).
+
+#### `fetchOwnSellingMarketItems() public view returns (MarketItem[] memory)`
+
+- Returns active listings where `seller == msg.sender`.
+
+#### `fetchOwnPurchasedMarketItems() public view returns (MarketItem[] memory)`
+
+- Returns items where `owner == msg.sender && sold == true` (items the caller has bought).
+
+#### `getMarketItem(uint256 marketItemId) public view returns (MarketItem memory)`
+
+- Returns the full `MarketItem` struct for a given ID (reverts if ID is invalid).
+
+## Security Considerations
+
+- **Reentrancy Protection** – All sensitive functions (`createMarketItem`, `cancelMarketItem`, `createMarketSale`, `relistMarketItem`, admin cancel, `withdrawBalance`) use the `nonReentrant` modifier.
+- **Checks‑Effects‑Interactions Pattern** – Functions update state before making external calls (transfers, NFT transfers).
+- **Immutability** – The `owner` address is immutable and set in the constructor.
+- **Locked Fees** – `_lockedFees` tracks the sum of listing fees for active listings. Withdrawable balance is `address(this).balance - _lockedFees`, preventing the owner from draining fees that belong to active listings.
+- **ERC721 Interface Check** – Ensures the NFT contract supports the required ERC721 interface before accepting a listing.
+
+## Integration with MyNFT
+
+The marketplace explicitly calls `MyNFT(nftContractAddress).getTokenCreatorById(tokenId)` to retrieve the original creator of each NFT. This information is stored in the `MarketItem` struct for reference but is not used for financial logic.
+
+## Example Workflow
+
+1. **Owner** deploys the `MyNFTMarketplace` contract.
+2. **User A** mints an NFT via `MyNFT.safeMint()` – this automatically approves the marketplace (due to the NFT’s `autoSyncMarketplaceApproval` modifier).
+3. **User A** calls `createMarketItem` with the NFT address, token ID, and price (plus listing fee). The NFT is transferred to the marketplace.
+4. **User B** sees the listing and calls `createMarketSale` with the exact price. The NFT is transferred to User B, and User A receives the sale proceeds (minus the listing fee, which goes to the owner).
+5. **User B** can later call `relistMarketItem` to put the same NFT up for sale again.
+
+## License
+
+```text
+// SPDX-License-Identifier: MIT
+```
+
 ---
-## Security & Guardrails
-- Inherits `ReentrancyGuardTransient` and `ERC721Holder`
-- Checks-effects-interactions pattern applied
-- ERC165 interface validation for ERC721
-- Owner-only admin functions
-- Non-reentrant modifiers on state-changing functions
+

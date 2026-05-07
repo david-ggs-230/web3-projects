@@ -1,145 +1,176 @@
-# MyNFT Design Document
+# MyNFT Smart Contract Documentation
 
-## Contract Overview
-`MyNFT` is a production-grade ERC721 NFT contract with creator tracking, enumerable support, metadata management, and built-in marketplace integration. It is fully compatible with OpenZeppelin 5.x and optimized for gas efficiency and security.
+## Overview
 
-Core Features:
-- Secure NFT minting with unique token IDs
-- Automatic approval for designated NFT marketplace
-- Creator tracking for each NFT
-- Query owned NFTs and created NFTs
-- Update token URI by original creator (owner-only)
-- Admin control to update marketplace address
-- Full ERC721 + Enumerable + URIStorage compliance
+`MyNFT` is an ERC721-compliant non-fungible token (NFT) contract that integrates OpenZeppelin’s `ERC721Enumerable`, `ERC721URIStorage`, and `Ownable` extensions. It supports dynamic marketplace contract address management and automatically synchronizes user approvals (`setApprovalForAll`) with the marketplace, making it easy to interact with decentralized marketplaces.
 
----
+## Features
 
-## 1. Constructor
-### 1.1 Inputs
-- `address _marketplaceAddress` – Official NFT marketplace contract address
+- **NFT Minting**: Users can safely mint NFTs with metadata URIs.
+- **Marketplace Address Management**: The contract owner can update the marketplace contract address; old addresses are archived.
+- **Automatic Approval Sync**: When minting or updating a token URI, the contract automatically revokes approvals for all old marketplaces and approves the current marketplace – no manual approval needed.
+- **Creator Tracking**: Records the creator of each NFT and maintains a list of token IDs created by each address.
+- **Token Queries**: Users can query tokens they own, tokens they created, and other useful information.
+- **URI Update**: Only the original creator can update the metadata URI of an NFT.
 
-### 1.2 Process
-1. Initialize ERC721 token with name "MyNFT" and symbol "NFTK"
-2. Set contract deployer as owner
-3. Validate marketplace address is not zero address
-4. Set initial token ID to 1
-5. Grant full approval to the marketplace for all NFTs
-6. Initialize creator-tracking mappings
+## Contract Structure
 
-### 1.3 Behavior
-Deploys the NFT contract and pre-authorizes the marketplace to manage user NFTs.
+### Inheritance
 
----
+- `ERC721` – Base NFT implementation.
+- `ERC721Enumerable` – Supports token enumeration (e.g., `totalSupply`, `tokenOfOwnerByIndex`).
+- `ERC721URIStorage` – Stores token URIs independently.
+- `Ownable` – Access control; `onlyOwner` modifier for administrative functions.
 
-## 2. setMarketplaceAddress()
-### 2.1 Inputs
-- `address _marketplaceAddress` – New marketplace address
+### State Variables
 
-### 2.2 Permissions
-Only contract owner
+| Variable | Type | Description |
+|----------|------|-------------|
+| `_nextTokenId` | `uint256` | Next token ID to be minted (starts at 1). |
+| `marketplaceAddress` | `address` | Currently approved marketplace contract address. |
+| `oldMarketplaces` | `address[]` | Array of historical marketplace addresses (for reference). |
+| `_creators` | `mapping(uint256 => address)` | Token ID → creator address. |
+| `_tokensByCreator` | `mapping(address => uint256[])` | Address → list of token IDs created by that address. |
 
-### 2.3 Process
-1. Validate new address is not zero address
-2. Revoke approval for the old marketplace
-3. Update marketplace address
-4. Grant approval to the new marketplace
-5. Emit `MarketplaceUpdated` event
+### Events
 
-### 2.4 Behavior
-Allows the owner to safely switch the authorized marketplace.
+- `TokenMinted(uint256 indexed tokenId, string tokenURI, address indexed marketplaceAddress)`  
+  Emitted when a new token is successfully minted.
+- `MarketplaceUpdated(address indexed oldMarketplace, address indexed newMarketplace)`  
+  Emitted when the marketplace address is changed.
 
----
+### Modifier
 
-## 3. safeMint()
-### 3.1 Inputs
-- `string memory uri` – Token metadata URI (IPFS or HTTP)
+- `autoSyncMarketplaceApproval`  
+  Before executing the target function:
+  1. Iterates over all old marketplace addresses. If the caller has "approve for all" (`isApprovedForAll`) set for an old marketplace, it revokes it (sets to `false`).
+  2. If the caller has not yet approved the current marketplace, it grants approval (sets to `true`).  
+  This modifier ensures the caller’s approval status with the marketplace is always correct. It is applied to `safeMint`, `updateTokenURI`, and `syncMarketplaceApproval`.
 
-### 3.2 Process
-1. Validate URI is not empty
-2. Generate new token ID sequentially
-3. Safely mint NFT to the caller
-4. Record the caller as the token creator
-5. Store token ID in creator’s list
-6. Set token metadata URI
-7. Emit `TokenMinted` event
-8. Return new token ID
+## Functions
 
-### 3.3 Behavior
-Public mint function that creates a new NFT and tracks its creator.
+### Constructor
 
----
-
-## 4. updateTokenURI()
-### 4.1 Inputs
-- `uint256 tokenId` – NFT token ID
-- `string memory newURI` – New metadata URI
-
-### 4.2 Permissions
-Caller must be:
-- Current owner of the token
-- **AND** original creator of the token
-
-### 4.3 Process
-1. Validate caller is token owner
-2. Validate caller is original creator
-3. Validate new URI is not empty
-4. Update token URI
-5. No event required (handled by ERC721 standard)
-
-### 4.4 Behavior
-Allows creators to update metadata only if they still own the NFT.
-
----
-
-## 5. getTokensOwned()
-### 5.1 Purpose
-Returns an array of all token IDs owned by the caller.
-
-### 5.2 Process
-1. Get balance of caller
-2. Initialize fixed-size array
-3. Use `tokenOfOwnerByIndex` (gas-efficient enumerable)
-4. Return list of owned token IDs
-
-### 5.3 Behavior
-Efficiently lists user-owned NFTs.
-
----
-
-## 6. getTokenCreatorById()
-### 6.1 Inputs
-- `uint256 tokenId`
-
-### 6.2 Process
-1. Validate token exists
-2. Return original creator address
-
-### 6.3 Behavior
-Used by marketplace to track original creators.
-
----
-
-## 7. getTokensCreated()
-### 7.1 Purpose
-Returns all token IDs created by the caller.
-
-### 7.2 Behavior
-Directly returns from mapping for high efficiency.
-
----
-
-## 8. isValidTokenId()
-### 8.1 Inputs
-- `uint256 tokenId`
-
-### 8.2 Behavior
-Returns `true` if token exists, using internal `_exists()` check.
-
----
-
-## Data Structures & Mappings
-
-### Private Mappings
 ```solidity
-mapping(uint256 => address) private _creators;
-mapping(address => uint256[]) private _tokensByCreator;
+constructor(address _marketplaceAddress) ERC721("MyNFT", "NFTK") Ownable(msg.sender)
+```
+
+- Sets token name to `"MyNFT"` and symbol to `"NFTK"`.
+- Sets the initial marketplace address (must not be zero).
+- Initializes `_nextTokenId` to 1 (token IDs start from 1).
+
+### Administrative Functions
+
+#### `setMarketplaceAddress(address _marketplaceAddress) external onlyOwner`
+
+- Updates the current marketplace address.
+- New address must be non-zero and different from the current one.
+- Pushes the old address into the `oldMarketplaces` array.
+- Emits a `MarketplaceUpdated` event.
+
+### User Functions
+
+#### `safeMint(string memory uri) public autoSyncMarketplaceApproval returns (uint256)`
+
+- Mints a new NFT.
+- URI cannot be empty.
+- The caller becomes the owner of the new token.
+- Records the creator and updates `_tokensByCreator`.
+- Calls `_setTokenURI` to store the URI.
+- Emits a `TokenMinted` event.
+- Returns the newly minted token ID.
+
+#### `updateTokenURI(uint256 tokenId, string memory newURI) external autoSyncMarketplaceApproval`
+
+- Updates the URI of an existing token.
+- Can only be called by the token’s **creator** (not necessarily the current owner).
+- The new URI cannot be empty.
+- Calls `_setTokenURI` internally.
+
+#### `syncMarketplaceApproval() public autoSyncMarketplaceApproval`
+
+- Manually triggers approval synchronization (revokes old marketplace approvals and approves the current marketplace).
+
+### View Functions
+
+#### `getOldMarketplaces() external view onlyOwner returns (address[] memory)`
+
+- Returns the array of historical marketplace addresses (owner only).
+
+#### `getTokensOwned() public view returns (uint256[] memory)`
+
+- Returns the list of token IDs owned by `msg.sender`.
+
+#### `getTokenCreatorById(uint256 tokenId) public view returns (address)`
+
+- Returns the creator address for a given token ID.
+- Requires the token to exist (`_ownerOf(tokenId) != address(0)`).
+
+#### `getTokensCreated() public view returns (uint256[] memory)`
+
+- Returns the list of token IDs created by `msg.sender`.
+
+#### `isValidTokenId(uint256 tokenId) public view returns (bool)`
+
+- Checks whether a token ID exists (i.e., has not been burned).
+
+### Overrides
+
+The contract overrides the following functions to support multiple inheritance correctly:
+
+- `_update`
+- `_increaseBalance`
+- `tokenURI`
+- `supportsInterface`
+
+Each override uses `super` to call the appropriate parent contract logic, following OpenZeppelin’s guidelines.
+
+## Usage Notes
+
+1. **Automatic Marketplace Approval Sync**  
+   The `autoSyncMarketplaceApproval` modifier is applied to minting, URI updates, and the manual sync function. Whenever a user performs these actions, the contract automatically revokes approvals for all old marketplaces and ensures the current marketplace is approved. If the marketplace address is changed, users do not need to manually adjust approvals – the next operation will sync automatically.
+
+2. **Creator-Only URI Updates**  
+   Only the original creator of an NFT can update its metadata URI, even if the token has been transferred to someone else. This ensures that the creator retains control over the token’s metadata.
+
+3. **Token ID Start**  
+   Token IDs start at 1 (not 0) to avoid ambiguity.
+
+4. **Historical Marketplace Addresses**  
+   Old marketplace addresses are stored only for the purpose of revoking approvals. The contract does not actively interact with them.
+
+## Example Workflow
+
+### Deployment & Setup
+
+1. Deploy `MyNFT` contract, passing the marketplace contract address (e.g., `0xMarket...`) to the constructor.
+2. If the marketplace needs to be changed, the owner calls `setMarketplaceAddress(0xNewMarket...)`.
+
+### User Mints an NFT
+
+1. User calls `safeMint("https://my-json-server/metadata/1")`.
+2. The `autoSyncMarketplaceApproval` modifier:
+   - Revokes any approvals for old marketplaces (if any).
+   - Approves the current marketplace (if not already approved).
+3. Token ID 1 is minted and assigned to the user.
+4. Creator information is stored.
+
+### User Updates URI
+
+1. User calls `updateTokenURI(1, "https://new-uri/metadata/1")`.
+2. The modifier syncs approvals again.
+3. If the caller is the creator, the URI is updated; otherwise, the transaction reverts.
+
+## Security Considerations
+
+- The marketplace address can only be changed by the contract owner and cannot be set to the zero address.
+- The auto‑sync logic revokes approvals for **all** previously used marketplace addresses, preventing outdated marketplaces from having operational permissions.
+- URI updates are restricted to the original creator to prevent metadata tampering after a token has been transferred.
+
+## License
+
+```text
+// SPDX-License-Identifier: MIT
+```
+
+---
