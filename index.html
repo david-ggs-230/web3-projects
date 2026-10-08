@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 DApp Demos Landing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0b1220 0%, #172033 100%);
+            color: #e5e7eb;
+            min-height: 100vh;
+            padding: 48px 24px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom:10px;
+        }
+        .desc {
+            color:#9ca3af;
+            font-size:1.05rem;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px,1fr));
+            gap:26px;
+        }
+        .dapp-card {
+            background-color:#192338;
+            border:1px solid #303f5c;
+            border-radius:18px;
+            padding:30px;
+            transition: 0.25s ease;
+            display:flex;
+            flex-direction:column;
+            min-height:340px;
+        }
+        .dapp-card:hover {
+            border-color:#3b82f6;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(37,99,235,0.15);
+        }
+        .dapp-card.reserved {
+            border:1px dashed #475569;
+            background-color:#151e30;
+        }
+        .dapp-card h2 {
+            font-size:1.3rem;
+            margin-bottom:14px;
+            color:#fff;
+        }
+        .tech-stack {
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-bottom:20px;
+        }
+        .tag {
+            background-color:#253554;
+            color:#93c5fd;
+            font-size:0.8rem;
+            padding:4px 10px;
+            border-radius:999px;
+        }
+        .card-text {
+            flex-grow:1;
+            line-height:1.65;
+            color:#b8c2d3;
+            font-size:0.96rem;
+            margin-bottom:24px;
+        }
+        .card-links a {
+            display:inline-block;
+            text-decoration:none;
+            background-color:#2563eb;
+            color:#fff;
+            padding:11px 20px;
+            border-radius:10px;
+            margin-right:10px;
+            margin-bottom:10px;
+            font-size:0.92rem;
+            transition:0.2s;
+        }
+        .card-links a:hover {
+            background-color:#1d4ed8;
+        }
+        .reserved-notice{
+            color:#64748b;
+            font-style:italic;
+            text-align:center;
+            margin:auto 0;
+            padding:20px;
+        }
+        footer{
+            margin-top:60px;
+            text-align:center;
+            color:#6b7280;
+            font-size:0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Web3 DApp Demo Collection</h1>
+        <p class="desc">Wallet‑connected example DApps built on React / Wagmi / RainbowKit</p>
+    </header>
+
+    <div class="cards-grid">
+        <!-- Card 1: React19 + RainbowKit + Wagmi + Ethers v6 Counter -->
+        <div class="dapp-card">
+            <h2>Counter DApp (Ethers‑v6)</h2>
+            <div class="tech-stack">
+                <span class="tag">React 19</span>
+                <span class="tag">RainbowKit</span>
+                <span class="tag">Wagmi v2</span>
+                <span class="tag">Ethers v6</span>
+                <span class="tag">Sepolia</span>
+            </div>
+            <div class="card-text">
+                On‑chain counter demo application. Wallet connect via RainbowKit.
+                Demonstrates mixed usage of Wagmi hooks together with raw Ethers v6 contract instance for reading & sending transactions.
+                Features increment, decrement, transaction status feedback.
+            </div>
+            <div class="card-links">
+                <a href="./counter-ethers/index.html">Launch DApp</a>
+                <a href="https://github.com" target="_blank">Source Code</a>
+            </div>
+        </div>
+
+        <!-- Card 2: React19 + RainbowKit + Wagmi + Viem Counter -->
+        <div class="dapp-card">
+            <h2>Counter DApp (Viem‑Native)</h2>
+            <div class="tech-stack">
+                <span class="tag">React 19</span>
+                <span class="tag">RainbowKit</span>
+                <span class="tag">Wagmi v2</span>
+                <span class="tag">Viem</span>
+                <span class="tag">Sepolia</span>
+            </div>
+            <div class="card-text">
+                Modern viem‑first implementation of the on‑chain counter.
+                No Ethers dependency. Fully relies on Wagmi react hooks built on top of Viem for contract read/write operations.
+                Recommended pattern for new web3 frontend projects.
+            </div>
+            <div class="card-links">
+                <a href="./counter-viem/index.html">Launch DApp</a>
+                <a href="https://github.com" target="_blank">Source Code</a>
+            </div>
+        </div>
+
+        <!-- Reserved empty card space for future DApp -->
+        <div class="dapp-card reserved">
+            <div class="reserved-notice">
+                <h3 style="margin-bottom:12px;">Reserved DApp Slot</h3>
+                <p>Future Web3 DApp demo card placeholder</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Web3 Demo Landing Page | MIT License
+    </footer>
+</div>
+</body>
+</html>
