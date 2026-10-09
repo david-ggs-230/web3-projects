@@ -4,15 +4,66 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/web3-projects/counter-ethers/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>react-vite-rainbowkit-wagmi-ethers-npm</title>
+    <title>Counter Contract DApp</title>
     <script type="module" crossorigin src="/web3-projects/counter-ethers/assets/index-B6_8CiLg.js"></script>
     <link rel="modulepreload" crossorigin href="/web3-projects/counter-ethers/assets/rolldown-runtime-BcKkbAw3.js">
     <link rel="modulepreload" crossorigin href="/web3-projects/counter-ethers/assets/wagmi-kit-5xZYw9F-.js">
     <link rel="modulepreload" crossorigin href="/web3-projects/counter-ethers/assets/vendor-react-Dqg4efJg.js">
     <link rel="stylesheet" crossorigin href="/web3-projects/counter-ethers/assets/wagmi-kit-DR00Q9RG.css">
     <link rel="stylesheet" crossorigin href="/web3-projects/counter-ethers/assets/index-DnpeGraD.css">
+        <style>
+      /* Inline styles ensure the spinner renders instantly before any external CSS files download */
+      .initial-loader-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100vw;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        font-family: system-ui, -apple-system, sans-serif;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #cbd5e1;
+        border-bottom-color: #2563eb; /* Matches your accent-color blue */
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+      }
+
+      .loader-text {
+        margin-top: 16px;
+        color: #475569;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+
+      @keyframes rotation {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
+
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Everything inside this div displays immediately, and gets wiped when React boots up -->
+      <div class="initial-loader-wrapper">
+        <div class="spinner"></div>
+        <div class="loader-text">Loading application assets...</div>
+      </div>
+    </div>
+
+    <!-- The bundle script that replaces the loader when ready -->
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
