@@ -1,3 +1,4 @@
+// Src/utils/ethers6Provider.ts
 import { BrowserProvider } from "ethers";
 import { useMemo } from "react";
 import type { Account, Chain, Client, Transport } from "viem";

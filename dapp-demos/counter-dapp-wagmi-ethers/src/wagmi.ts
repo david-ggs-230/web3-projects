@@ -1,6 +1,6 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 
-import { http, webSocket, fallback } from "wagmi";
+//Import { http, webSocket, fallback } from "wagmi";
 import { sepolia, polygonAmoy } from "wagmi/chains";
 
 export const config = getDefaultConfig({
@@ -9,7 +9,7 @@ export const config = getDefaultConfig({
   projectId: "94d9861d16f29ff196678f449668ed6a",
   ssr: false,
   chains: [sepolia, polygonAmoy],
-  transports: {
+ /**  Transports: {
     [sepolia.id]: fallback([
       webSocket(`wss://ethereum-sepolia-rpc.publicnode.com`, {
         reconnect: true,
@@ -40,4 +40,5 @@ export const config = getDefaultConfig({
       http(`https://polygon-amoy.drpc.org`),
     ]),
   },
+  **/
 });

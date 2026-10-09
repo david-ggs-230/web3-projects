@@ -1,3 +1,4 @@
+// Src/utils/useCounterContract.ts
 import { useMemo } from "react";
 import { Contract } from "ethers";
 import { useChainId } from "wagmi";
