@@ -1,1 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/web3-projects/counter-appkit-viem/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Counter Contract DApp</title>
+
+  <style>body{box-sizing:border-box;-webkit-font-smoothing:antialiased;background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);flex-direction:column;justify-content:center;min-height:100vh;margin:0;padding:24px;font-family:system-ui,-apple-system,sans-serif;display:flex}.html-title{text-align:center;color:#0f172a;margin:0 0 8px;font-size:2rem;font-weight:800}.html-subtitle{text-align:center;color:#475569;margin:0 0 24px;font-size:1.2rem;font-weight:600}.html-app-shell{box-sizing:border-box;background:#fff;border:1px solid #e2e8f0;border-radius:20px;flex-direction:column;justify-content:center;align-items:center;width:100%;min-width:400px;max-width:650px;min-height:300px;margin-left:auto;margin-right:auto;padding:40px 24px;display:flex;box-shadow:0 10px 25px -5px #0000000d}.spinner-element{box-sizing:border-box;border:4px solid #cbd5e1;border-bottom-color:#2563eb;border-radius:50%;width:44px;height:44px;animation:.85s linear infinite quick-spin;display:inline-block}.loader-text-prompt{color:#64748b;letter-spacing:-.01em;margin-top:20px;font-size:.95rem;font-weight:600}@keyframes quick-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
+  <script type="module" crossorigin src="/web3-projects/counter-appkit-viem/assets/index-DK8WmdCf.js"></script>
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/rolldown-runtime-DLMaRju-.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wagmi-kit-BQMDyoLz.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/ModalController-DO37NVVb.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-text-kZVp-Wha.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-image-CVbBZ7GZ.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-icon-box-DWXO39Ou.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-link-DM3EjnIW.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-icon-box-CJ6sTO2M.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-shimmer-DRydDYyV.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/w3m-activity-list-Dd366jv3.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/NavigationUtil-CLCRNDHF.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-list-social-N0rSyzAH.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/events-BMpYyskR.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/SIWXUtil-Cd-9Achk.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/AlertController-BqlB_Rxm.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-icon-D7XZvI2O.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/w3m-tooltip-sdjfCvLY.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/ref-B_kUXM2E.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-loading-thumbnail-C87n4QKw.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/ExchangeController-JfO21Ei0.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/ConstantsUtil-DHZEF7tw.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-network-image-ockUpal4.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/MathUtil-B2UslVSw.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-loading-spinner-DQ1Lqz4V.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/w3m-onramp-providers-footer-B7WiT0ZY.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/ConstantsUtil-C1qdKpER.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-tag-DYG3eOwf.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/wui-input-text-CTsLNEB6.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/vendor-react-BI3Sl8ua.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/vendor-react-B2qpdBJq.js">
+  <link rel="modulepreload" crossorigin href="/web3-projects/counter-appkit-viem/assets/vendor-react-Ch-VF3C0.js">
+  <link rel="stylesheet" crossorigin href="/web3-projects/counter-appkit-viem/assets/index-D1EdFIER.css">
+</head>
+<body>
+  <div id="root">
+    <!-- HTML DOM paints this immediately while the network downloads your JS files -->
+    <h1 class="html-title">Counter Contract</h1>
+    <h2 class="html-subtitle">(AppKit, Wagmi, and Viem)</h2>
+    <div class="html-app-shell">
+      <div class="spinner-element"></div>
+      <div class="loader-text-prompt">Loading Counter DApp...</div>
+    </div>
+  </div>
+
+  <!-- The background bundler script. Once loaded, it completely overwrites everything inside #root -->
+</body>
+</html>
 
