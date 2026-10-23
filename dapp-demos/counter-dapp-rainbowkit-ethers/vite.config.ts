@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/web3-projects/counter-ethers/",
+  base: "/web3-projects/counter-rainbowkit-ethers/",
   build: {
     // Raises the chunk size warning threshold to 1000 KB (1 MB)
     chunkSizeWarningLimit: 1000,
