@@ -29,10 +29,6 @@ Each entry includes **local built dist HTML entry point** and **remote GitHub so
 | Card4 | Counter DApp (Ethers‑v6) | React19, AppKit, Wagmi v2, Ethers v6, Sepolia, PolygonAmoy | [./counter‑appkit‑ethers/index.html](https://david-ggs-230.github.io/web3-projects/counter-appkit-ethers/index.html) | [counter‑dapp‑appkit‑ethers](https://github.com/david-ggs-230/web3-projects/tree/main/dapp-demos/counter-dapp-appkit-ethers) |
 | Card5 | Counter DApp (Viem‑Native + Social Login) | React19, AppKit, Wagmi v2, Viem, Social‑Login(Email / Google / X / GitHub), Sepolia, PolygonAmoy | [./counter‑appkit‑viem‑social/index.html](https://david-ggs-230.github.io/web3-projects/counter-appkit-viem-social/index.html) | [counter‑dapp‑appkit‑viem‑social‑login](https://github.com/david-ggs-230/web3-projects/tree/main/dapp-demos/counter-dapp-appkit-viem-social-login) |
 
-### Notes
-1. **Dist files**: Each sub‑folder under `dapp‑demos/` holds compiled static HTML dist output, you can directly open `index.html` to launch DApp locally.
-2. **Source code**: Full project source code for every demo is hosted on GitHub repository, each demo maps to its own sub‑directory.
-3. There is one reserved placeholder card on landing page for future new DApp demos.
 
 ## Feature Highlights
 - Two wallet UI options: **RainbowKit** and **WalletConnect AppKit**.
