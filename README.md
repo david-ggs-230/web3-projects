@@ -1,4 +1,3 @@
-```markdown
 # Web3 DApp Demo Collection - Project Overview
 > Landing page: `test.html` (Web3 DApp Demos Landing)
 > Tech stack: React 19, Wagmi v2, Viem / Ethers v6, RainbowKit / WalletConnect AppKit
@@ -40,6 +39,3 @@ Each entry includes **local built dist HTML entry point** and **remote GitHub so
 - Two web3 library choices: pure **Viem‑native** or mixed **Ethers v6**.
 - Card5 adds AppKit built‑in social login: Email, X(Twitter), Google, GitHub, enabling social web3 onboarding without browser wallet extension.
 - All demos implement on‑chain counter: increment / decrement contract operation, transaction status feedback, compatible with Sepolia & PolygonAmoy testnet.
-```
-
-直接复制全部内容保存为 `README.md` 即可使用。
